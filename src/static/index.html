@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Knowledge Base Assistant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ------------------------------------------------------------------ */
+/* Reset & base                                                       */
+/* ------------------------------------------------------------------ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:         #f9fafb;
+  --bg-user:    #e8edf3;
+  --bg-assist:  transparent;
+  --bg-system:  #f0f4f8;
+  --text:       #1e293b;
+  --text-light: #64748b;
+  --accent:     #3b82f6;
+  --accent-h:   #2563eb;
+  --border:     #e2e8f0;
+  --input-bg:   #ffffff;
+  --radius:     22px;
+  --max-w:      740px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:         #0f172a;
+    --bg-user:    #1e3a5f;
+    --bg-assist:  transparent;
+    --bg-system:  #1e293b;
+    --text:       #e2e8f0;
+    --text-light: #94a3b8;
+    --accent:     #60a5fa;
+    --accent-h:   #3b82f6;
+    --border:     #334155;
+    --input-bg:   #1e293b;
+  }
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ------------------------------------------------------------------ */
+/* Header                                                              */
+/* ------------------------------------------------------------------ */
+.header {
+  text-align: center;
+  padding: 20px 16px 4px;
+  flex-shrink: 0;
+}
+.header h1 {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-light);
+  letter-spacing: 0.01em;
+}
+
+/* ------------------------------------------------------------------ */
+/* Messages area                                                       */
+/* ------------------------------------------------------------------ */
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 16px 24px;
+  scroll-behavior: smooth;
+}
+.messages-inner {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Welcome state */
+.welcome {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-light);
+  font-size: 0.92rem;
+}
+.welcome.hidden { display: none; }
+
+/* Bubble */
+.msg {
+  max-width: 85%;
+  padding: 12px 16px;
+  border-radius: 18px;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+.msg.user {
+  align-self: flex-end;
+  background: var(--bg-user);
+  border-bottom-right-radius: 4px;
+}
+.msg.assistant {
+  align-self: flex-start;
+  background: var(--bg-assist);
+  border-bottom-left-radius: 4px;
+}
+.msg.system {
+  align-self: center;
+  background: var(--bg-system);
+  font-size: 0.8rem;
+  color: var(--text-light);
+  padding: 8px 16px;
+  border-radius: 12px;
+}
+
+/* Markdown inside assistant messages */
+.msg.assistant p { margin-bottom: 8px; }
+.msg.assistant p:last-child { margin-bottom: 0; }
+.msg.assistant ul, .msg.assistant ol { margin: 4px 0 8px 20px; }
+.msg.assistant li { margin-bottom: 2px; }
+.msg.assistant strong { font-weight: 600; }
+.msg.assistant code {
+  background: var(--bg-system);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 0.84em;
+}
+
+/* Thinking indicator */
+.thinking {
+  align-self: flex-start;
+  padding: 12px 16px;
+  color: var(--text-light);
+  font-size: 0.9rem;
+}
+.thinking .dots span {
+  animation: blink 1.4s infinite;
+  opacity: 0.2;
+}
+.thinking .dots span:nth-child(2) { animation-delay: 0.2s; }
+.thinking .dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes blink { 20% { opacity: 1; } }
+
+/* ------------------------------------------------------------------ */
+/* Input bar                                                           */
+/* ------------------------------------------------------------------ */
+.input-area {
+  flex-shrink: 0;
+  padding: 8px 16px 20px;
+}
+.input-bar {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 6px 6px 4px;
+  transition: border-color 0.15s;
+}
+.input-bar:focus-within {
+  border-color: var(--accent);
+}
+
+/* Attach button */
+.attach-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 12px;
+  color: var(--text-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+.attach-btn:hover {
+  color: var(--text);
+  background: var(--bg);
+}
+.attach-btn svg { width: 20px; height: 20px; }
+
+/* Text input */
+.input-bar textarea {
+  flex: 1;
+  border: none;
+  outline: none;
+  resize: none;
+  font: inherit;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  max-height: 140px;
+  padding: 6px 4px;
+  background: transparent;
+  color: var(--text);
+}
+.input-bar textarea::placeholder { color: var(--text-light); }
+
+/* Send button */
+.send-btn {
+  background: var(--accent);
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 12px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+.send-btn:hover { background: var(--accent-h); }
+.send-btn:disabled { opacity: 0.4; cursor: default; }
+.send-btn svg { width: 18px; height: 18px; }
+
+/* Hidden file input */
+#file-input { display: none; }
+
+/* ------------------------------------------------------------------ */
+/* Bottom links                                                        */
+/* ------------------------------------------------------------------ */
+.bottom-bar {
+  text-align: center;
+  padding: 0 0 12px;
+  flex-shrink: 0;
+}
+.bottom-bar button {
+  background: none;
+  border: none;
+  color: var(--text-light);
+  font-size: 0.72rem;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.15s;
+  padding: 2px 8px;
+}
+.bottom-bar button:hover { opacity: 1; }
+
+/* ------------------------------------------------------------------ */
+/* Mobile                                                              */
+/* ------------------------------------------------------------------ */
+@media (max-width: 600px) {
+  .msg { max-width: 92%; font-size: 0.88rem; }
+  .input-area { padding: 6px 10px 14px; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Knowledge Base Assistant</h1>
+</div>
+
+<div class="messages" id="messages">
+  <div class="welcome" id="welcome">Ask a question about your documents</div>
+  <div class="messages-inner" id="messages-inner"></div>
+</div>
+
+<div class="input-area">
+  <div class="input-bar">
+    <button class="attach-btn" id="attach-btn" title="Upload documents">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+      </svg>
+    </button>
+    <input type="file" id="file-input" multiple accept=".pdf,.md,.txt,.markdown">
+    <textarea id="msg-input" rows="1" placeholder="Ask a question..." autofocus></textarea>
+    <button class="send-btn" id="send-btn" title="Send">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<div class="bottom-bar">
+  <button id="clear-btn">Clear conversation</button>
+</div>
+
+<script>
+// ---- DOM refs ----
+const messagesEl    = document.getElementById('messages');
+const innerEl       = document.getElementById('messages-inner');
+const welcomeEl     = document.getElementById('welcome');
+const inputEl       = document.getElementById('msg-input');
+const sendBtn       = document.getElementById('send-btn');
+const attachBtn     = document.getElementById('attach-btn');
+const fileInput     = document.getElementById('file-input');
+const clearBtn      = document.getElementById('clear-btn');
+
+// ---- State ----
+let apiHistory = [];   // mirrors query.py's history format
+let busy = false;
+
+// ---- Helpers ----
+function scrollBottom() {
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+function addMessage(role, html) {
+  welcomeEl.classList.add('hidden');
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+  div.innerHTML = html;
+  innerEl.appendChild(div);
+  scrollBottom();
+  return div;
+}
+
+function showThinking() {
+  const div = document.createElement('div');
+  div.className = 'thinking';
+  div.id = 'thinking';
+  div.innerHTML = '<span class="dots"><span>.</span><span>.</span><span>.</span></span>';
+  innerEl.appendChild(div);
+  scrollBottom();
+}
+
+function hideThinking() {
+  const el = document.getElementById('thinking');
+  if (el) el.remove();
+}
+
+// Simple markdown → HTML (bold, italic, bullets, code, paragraphs)
+function renderMarkdown(text) {
+  let html = text
+    // code blocks
+    .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
+    // inline code
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    // bold
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    // italic
+    .replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+  // Split into paragraphs, handle bullet lists
+  const lines = html.split('\n');
+  let out = '';
+  let inList = false;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    const bullet = trimmed.match(/^[-*•]\s+(.*)/);
+    const numbered = trimmed.match(/^\d+\.\s+(.*)/);
+
+    if (bullet) {
+      if (!inList) { out += '<ul>'; inList = 'ul'; }
+      out += '<li>' + bullet[1] + '</li>';
+    } else if (numbered) {
+      if (!inList) { out += '<ol>'; inList = 'ol'; }
+      out += '<li>' + numbered[1] + '</li>';
+    } else {
+      if (inList) { out += inList === 'ul' ? '</ul>' : '</ol>'; inList = false; }
+      if (trimmed === '') {
+        out += '';
+      } else {
+        out += '<p>' + trimmed + '</p>';
+      }
+    }
+  }
+  if (inList) out += inList === 'ul' ? '</ul>' : '</ol>';
+
+  return out;
+}
+
+// ---- Auto-resize textarea ----
+inputEl.addEventListener('input', () => {
+  inputEl.style.height = 'auto';
+  inputEl.style.height = Math.min(inputEl.scrollHeight, 140) + 'px';
+});
+
+// ---- Send message ----
+async function sendMessage() {
+  const text = inputEl.value.trim();
+  if (!text || busy) return;
+
+  busy = true;
+  sendBtn.disabled = true;
+  inputEl.value = '';
+  inputEl.style.height = 'auto';
+
+  addMessage('user', text.replace(/</g, '&lt;').replace(/>/g, '&gt;'));
+  showThinking();
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text, history: apiHistory }),
+    });
+    const data = await res.json();
+
+    hideThinking();
+    addMessage('assistant', renderMarkdown(data.answer));
+    apiHistory = data.history;
+  } catch (err) {
+    hideThinking();
+    addMessage('system', 'Something went wrong. Please try again.');
+  }
+
+  busy = false;
+  sendBtn.disabled = false;
+  inputEl.focus();
+}
+
+sendBtn.addEventListener('click', sendMessage);
+inputEl.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+});
+
+// ---- File upload ----
+attachBtn.addEventListener('click', () => fileInput.click());
+
+fileInput.addEventListener('change', async () => {
+  if (!fileInput.files.length) return;
+
+  const formData = new FormData();
+  for (const file of fileInput.files) {
+    formData.append('files', file);
+  }
+
+  addMessage('system', 'Uploading and indexing...');
+
+  try {
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData,
+    });
+    const data = await res.json();
+
+    // Remove the "uploading" message
+    innerEl.lastChild.remove();
+
+    for (const result of data.results) {
+      addMessage('system', result);
+    }
+  } catch (err) {
+    innerEl.lastChild.remove();
+    addMessage('system', 'Upload failed. Please try again.');
+  }
+
+  fileInput.value = '';
+});
+
+// ---- Clear conversation ----
+clearBtn.addEventListener('click', () => {
+  innerEl.innerHTML = '';
+  welcomeEl.classList.remove('hidden');
+  apiHistory = [];
+});
+</script>
+</body>
+</html>
