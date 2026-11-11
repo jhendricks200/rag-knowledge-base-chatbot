@@ -1,10 +1,8 @@
 # Knowledge Base Assistant
 
-A RAG (Retrieval-Augmented Generation) chatbot that answers questions grounded entirely in your uploaded documents. No hallucination — every answer is sourced and cited.
+A RAG (Retrieval-Augmented Generation) chatbot that answers questions grounded in your uploaded documents. Answers only from your documents, with citations.
 
 Upload PDFs or Markdown files, and the system automatically ingests, chunks, embeds, and indexes them. Ask a question in the chat and get accurate answers drawn only from your knowledge base.
-
-![Chat Interface](screenshot.png)
 
 ## Tech Stack
 
@@ -20,8 +18,10 @@ Upload PDFs or Markdown files, and the system automatically ingests, chunks, emb
 
 ## Setup
 
+Requires Python 3.10+.
+
 ```bash
-git clone https://github.com/YOUR_USERNAME/rag-knowledge-base-chatbot.git
+git clone https://github.com/jhendricks200/rag-knowledge-base-chatbot.git
 cd rag-knowledge-base-chatbot
 
 python3 -m venv venv
