@@ -80,7 +80,18 @@ A GitHub Actions workflow (`.github/workflows/eval.yml`) runs the evaluation on 
 
 ### Results
 
-<!-- RESULTS -->
+Retrieval results from the GitHub Actions run on 12 Nov 2026 (`all-MiniLM-L6-v2`, top 5 chunks, 31 answerable questions):
+
+| Metric | Result |
+|--------|--------|
+| Hit rate @1 | 97% (30 / 31) |
+| Hit rate @5 | 100% (31 / 31) |
+| MRR | 0.98 |
+| Right document in top 5 | 100% |
+
+The one question not ranked first was "How much does the Professional plan cost per user per month?", where the pricing section came back 4th behind other plan-related FAQ chunks. It was still in the top 5, so Claude received it as context.
+
+Caveat: this is a small corpus (4 documents) with questions written by the author, so these numbers show the pipeline works end to end. They are not a benchmark. Answer accuracy, citation and refusal scores will be added once the workflow runs with an API key.
 
 ## Project Structure
 
