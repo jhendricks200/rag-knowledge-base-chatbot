@@ -21,6 +21,7 @@ Usage:
 import argparse
 import json
 import os
+import re
 import sys
 import time
 from datetime import datetime, timezone
@@ -49,10 +50,20 @@ def normalize(text: str) -> str:
     return text.lower().replace(",", "").replace("’", "'")
 
 
+def _contains(text: str, phrase: str) -> bool:
+    """Substring match, but numbers must stand alone ("5" doesn't match "15")."""
+    pattern = re.escape(phrase)
+    if phrase[:1].isdigit():
+        pattern = r"(?<![\d.])" + pattern
+    if phrase[-1:].isdigit():
+        pattern += r"(?![\d])"
+    return re.search(pattern, text) is not None
+
+
 def facts_found(answer: str, must_include: list[list[str]]) -> bool:
     """Every group must have at least one alternative present in the answer."""
     a = normalize(answer)
-    return all(any(normalize(alt) in a for alt in group) for group in must_include)
+    return all(any(_contains(a, normalize(alt)) for alt in group) for group in must_include)
 
 
 def retrieval_rank(results: list[dict], source: str, section: str) -> int | None:
@@ -124,6 +135,8 @@ def main():
         if run_answers:
             status.append("answer=" + ("PASS" if row["correct"] else "FAIL"))
         print(f"{q['id']}  {' '.join(status):28}  {q['question']}")
+        if run_answers:
+            print("      -> " + " ".join(row["answer"].split())[:300])
         rows.append(row)
 
     # ---- Summary ----
