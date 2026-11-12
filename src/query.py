@@ -124,7 +124,8 @@ def ask(
         messages=history,
     )
 
-    answer = response.content[0].text
+    # Newer models can return thinking blocks before the answer; keep only text
+    answer = "".join(b.text for b in response.content if b.type == "text")
 
     # Append assistant response to history
     history.append({"role": "assistant", "content": answer})
