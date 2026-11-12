@@ -80,18 +80,22 @@ A GitHub Actions workflow (`.github/workflows/eval.yml`) runs the evaluation on 
 
 ### Results
 
-Retrieval results from the GitHub Actions run on 12 Nov 2026 (`all-MiniLM-L6-v2`, top 5 chunks, 31 answerable questions):
+Results from the GitHub Actions run on 12 Nov 2026 (`all-MiniLM-L6-v2` embeddings, top 5 chunks, `claude-sonnet-5-5`):
 
 | Metric | Result |
 |--------|--------|
-| Hit rate @1 | 97% (30 / 31) |
-| Hit rate @5 | 100% (31 / 31) |
+| Retrieval hit rate @1 | 97% (30 / 31) |
+| Retrieval hit rate @5 | 100% (31 / 31) |
 | MRR | 0.98 |
-| Right document in top 5 | 100% |
+| Answer accuracy | 100% (31 / 31) |
+| Citation rate | 100% (31 / 31) |
+| Refusal accuracy | 100% (4 / 4) |
 
-The one question not ranked first was "How much does the Professional plan cost per user per month?", where the pricing section came back 4th behind other plan-related FAQ chunks. It was still in the top 5, so Claude received it as context.
+The one retrieval result not ranked first was "How much does the Professional plan cost per user per month?", where the pricing section came back 4th behind other plan-related FAQ chunks. It was still in the top 5, so Claude answered correctly. Every answer is printed in the workflow log so the scores can be checked by hand.
 
-Caveat: this is a small corpus (4 documents) with questions written by the author, so these numbers show the pipeline works end to end. They are not a benchmark. Answer accuracy, citation and refusal scores will be added once the workflow runs with an API key.
+Building the eval surfaced three real bugs, fixed in the same change: the pinned model (`claude-sonnet-4-20250514`) had been retired and returned 404, the response parser assumed the first content block was text (newer models can return a thinking block first), and a new API client was created on every question.
+
+Caveat: this is a small corpus (4 documents) with questions written by the author, so these numbers show the pipeline works end to end and catch regressions. They are not a benchmark. Harder next steps would be paraphrased and multi-hop questions, and a larger document set.
 
 ## Project Structure
 
