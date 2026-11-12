@@ -54,10 +54,41 @@ Open http://localhost:7860. Upload documents using the paperclip icon in the inp
 
 Conversation memory keeps the last 5 exchanges so follow-up questions work naturally.
 
+## Evaluation
+
+The repo includes a small, reproducible test set so the chatbot's quality is measured instead of assumed.
+
+- **`eval/questions.jsonl`**: 35 questions written against the four documents in `docs/`. 31 have a known answer, the document and section it lives in, and the facts the answer must contain. 4 are questions the documents cannot answer (for example "Who is the CEO?"), where the correct behavior is to say so instead of guessing.
+- **`eval/run_eval.py`**: runs every question through the real pipeline and scores it.
+
+| Metric | What it checks |
+|--------|----------------|
+| Retrieval hit rate @1 / @5 | The chunk holding the answer (right document **and** section) is the first result / in the top 5 |
+| MRR | Mean reciprocal rank of that chunk (1.0 = always first) |
+| Answer accuracy | Claude's answer contains every expected fact and does not wrongly refuse |
+| Citation rate | The answer cites the correct source document |
+| Refusal accuracy | Unanswerable questions get "I don't have that information" |
+
+Scoring is deterministic string matching on key facts (numbers, names), so results are transparent and repeatable. The eval builds its own index from `docs/` in `eval/.chroma_eval`, so uploads made through the chat UI don't change the scores.
+
+```bash
+python eval/run_eval.py                  # full run (needs ANTHROPIC_API_KEY)
+python eval/run_eval.py --retrieval-only # retrieval only, no API key needed
+```
+
+A GitHub Actions workflow (`.github/workflows/eval.yml`) runs the evaluation on every pull request and push to `main` and uploads `eval/results/latest.json`. Answer scoring runs when an `ANTHROPIC_API_KEY` repository secret is set.
+
+### Results
+
+<!-- RESULTS -->
+
 ## Project Structure
 
 ```
 ├── docs/                     # Document store (PDFs, Markdown, text)
+├── eval/
+│   ├── questions.jsonl       # Test questions with expected sources and facts
+│   └── run_eval.py           # Evaluation harness
 ├── src/
 │   ├── static/
 │   │   └── index.html        # Chat UI (HTML/CSS/JS)
