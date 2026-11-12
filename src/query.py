@@ -20,7 +20,7 @@ from embed import search
 # Load .env from project root
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
-MODEL = "claude-sonnet-4-20250514"
+MODEL = "claude-sonnet-5-5"
 MAX_HISTORY = 5  # number of exchange pairs to keep
 
 
