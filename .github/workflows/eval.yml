@@ -6,10 +6,21 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  id-token: write  # lets GitHub prove its identity to the Claude API (no stored API key)
+
 jobs:
   eval:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      # Workload Identity Federation IDs (not secrets) from the Claude Console
+      ANTHROPIC_FEDERATION_RULE_ID: ${{ vars.ANTHROPIC_FEDERATION_RULE_ID }}
+      ANTHROPIC_ORGANIZATION_ID: ${{ vars.ANTHROPIC_ORGANIZATION_ID }}
+      ANTHROPIC_SERVICE_ACCOUNT_ID: ${{ vars.ANTHROPIC_SERVICE_ACCOUNT_ID }}
+      ANTHROPIC_WORKSPACE_ID: ${{ vars.ANTHROPIC_WORKSPACE_ID }}
+      ANTHROPIC_IDENTITY_TOKEN_FILE: /tmp/gha-jwt
     steps:
       - uses: actions/checkout@v4
 
@@ -22,15 +33,21 @@ jobs:
         run: |
           pip install torch --index-url https://download.pytorch.org/whl/cpu
           pip install -r requirements.txt
+          pip install --upgrade anthropic
+
+      - name: Fetch GitHub identity token for Claude API
+        if: env.ANTHROPIC_FEDERATION_RULE_ID != ''
+        run: |
+          curl -sS -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=https://api.anthropic.com" \
+            | jq -r .value > "$ANTHROPIC_IDENTITY_TOKEN_FILE"
 
       - name: Run evaluation
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          if [ -n "$ANTHROPIC_API_KEY" ]; then
+          if [ -n "$ANTHROPIC_FEDERATION_RULE_ID" ] && [ -s "$ANTHROPIC_IDENTITY_TOKEN_FILE" ]; then
             python eval/run_eval.py
           else
-            echo "No ANTHROPIC_API_KEY secret set; running retrieval checks only."
+            echo "Claude API not connected; running retrieval checks only."
             python eval/run_eval.py --retrieval-only
           fi
 

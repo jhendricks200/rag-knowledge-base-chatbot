@@ -72,11 +72,11 @@ The repo includes a small, reproducible test set so the chatbot's quality is mea
 Scoring is deterministic string matching on key facts (numbers, names), so results are transparent and repeatable. The eval builds its own index from `docs/` in `eval/.chroma_eval`, so uploads made through the chat UI don't change the scores.
 
 ```bash
-python eval/run_eval.py                  # full run (needs ANTHROPIC_API_KEY)
+python eval/run_eval.py                  # full run (needs ANTHROPIC_API_KEY in .env)
 python eval/run_eval.py --retrieval-only # retrieval only, no API key needed
 ```
 
-A GitHub Actions workflow (`.github/workflows/eval.yml`) runs the evaluation on every pull request and push to `main` and uploads `eval/results/latest.json`. Answer scoring runs when an `ANTHROPIC_API_KEY` repository secret is set.
+A GitHub Actions workflow (`.github/workflows/eval.yml`) runs the evaluation on every pull request and push to `main` and uploads `eval/results/latest.json`. In CI, answer scoring authenticates to the Claude API with Workload Identity Federation (GitHub OIDC), so no API key is stored in the repo or its secrets. It runs when the federation IDs are set as repository variables.
 
 ### Results
 

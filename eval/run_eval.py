@@ -79,11 +79,14 @@ def main():
 
     run_answers = not args.retrieval_only
     if run_answers:
-        if not os.environ.get("ANTHROPIC_API_KEY"):
+        # Either an API key (local .env) or Workload Identity Federation
+        # (GitHub Actions OIDC, no stored secret) works; the SDK reads both.
+        has_creds = lambda: os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_FEDERATION_RULE_ID")
+        if not has_creds():
             from dotenv import load_dotenv
             load_dotenv(ROOT / ".env")
-        if not os.environ.get("ANTHROPIC_API_KEY"):
-            sys.exit("ANTHROPIC_API_KEY not set. Add it to .env or use --retrieval-only.")
+        if not has_creds():
+            sys.exit("No Claude credentials. Add ANTHROPIC_API_KEY to .env or use --retrieval-only.")
         import query
         model = query.MODEL
 
