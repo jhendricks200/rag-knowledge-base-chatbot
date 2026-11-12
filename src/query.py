@@ -23,6 +23,16 @@ load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 MODEL = "claude-sonnet-5-5"
 MAX_HISTORY = 5  # number of exchange pairs to keep
 
+_client = None
+
+
+def _get_client() -> anthropic.Anthropic:
+    """Reuse one client so credentials are set up once, not on every question."""
+    global _client
+    if _client is None:
+        _client = anthropic.Anthropic()
+    return _client
+
 
 # ---------------------------------------------------------------------------
 # Prompt building
@@ -106,7 +116,7 @@ def ask(
         history = history[-max_messages:]
 
     # Call Claude
-    client = anthropic.Anthropic()
+    client = _get_client()
     response = client.messages.create(
         model=MODEL,
         max_tokens=1024,
