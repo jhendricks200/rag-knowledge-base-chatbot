@@ -54,10 +54,56 @@ Open http://localhost:7860. Upload documents using the paperclip icon in the inp
 
 Conversation memory keeps the last 5 exchanges so follow-up questions work naturally.
 
+## Evaluation
+
+The repo includes a small, reproducible test set so the chatbot's quality is measured instead of assumed.
+
+- **`eval/questions.jsonl`**: 35 questions written against the four documents in `docs/`. 31 have a known answer, the document and section it lives in, and the facts the answer must contain. 4 are questions the documents cannot answer (for example "Who is the CEO?"), where the correct behavior is to say so instead of guessing.
+- **`eval/run_eval.py`**: runs every question through the real pipeline and scores it.
+
+| Metric | What it checks |
+|--------|----------------|
+| Retrieval hit rate @1 / @5 | The chunk holding the answer (right document **and** section) is the first result / in the top 5 |
+| MRR | Mean reciprocal rank of that chunk (1.0 = always first) |
+| Answer accuracy | Claude's answer contains every expected fact and does not wrongly refuse |
+| Citation rate | The answer cites the correct source document |
+| Refusal accuracy | Unanswerable questions get "I don't have that information" |
+
+Scoring is deterministic string matching on key facts (numbers, names), so results are transparent and repeatable. The eval builds its own index from `docs/` in `eval/.chroma_eval`, so uploads made through the chat UI don't change the scores.
+
+```bash
+python eval/run_eval.py                  # full run (needs ANTHROPIC_API_KEY in .env)
+python eval/run_eval.py --retrieval-only # retrieval only, no API key needed
+```
+
+A GitHub Actions workflow (`.github/workflows/eval.yml`) runs the evaluation on every pull request and push to `main` and uploads `eval/results/latest.json`. In CI, answer scoring authenticates to the Claude API with Workload Identity Federation (GitHub OIDC), so no API key is stored in the repo or its secrets. It runs when the federation IDs are set as repository variables.
+
+### Results
+
+Results from the GitHub Actions run on 12 Nov 2026 (`all-MiniLM-L6-v2` embeddings, top 5 chunks, `claude-sonnet-5-5`):
+
+| Metric | Result |
+|--------|--------|
+| Retrieval hit rate @1 | 97% (30 / 31) |
+| Retrieval hit rate @5 | 100% (31 / 31) |
+| MRR | 0.98 |
+| Answer accuracy | 100% (31 / 31) |
+| Citation rate | 100% (31 / 31) |
+| Refusal accuracy | 100% (4 / 4) |
+
+The one retrieval result not ranked first was "How much does the Professional plan cost per user per month?", where the pricing section came back 4th behind other plan-related FAQ chunks. It was still in the top 5, so Claude answered correctly. Every answer is printed in the workflow log so the scores can be checked by hand.
+
+Building the eval surfaced three real bugs, fixed in the same change: the pinned model (`claude-sonnet-4-20250514`) had been retired and returned 404, the response parser assumed the first content block was text (newer models can return a thinking block first), and a new API client was created on every question.
+
+Caveat: this is a small corpus (4 documents) with questions written by the author, so these numbers show the pipeline works end to end and catch regressions. They are not a benchmark. Harder next steps would be paraphrased and multi-hop questions, and a larger document set.
+
 ## Project Structure
 
 ```
 ├── docs/                     # Document store (PDFs, Markdown, text)
+├── eval/
+│   ├── questions.jsonl       # Test questions with expected sources and facts
+│   └── run_eval.py           # Evaluation harness
 ├── src/
 │   ├── static/
 │   │   └── index.html        # Chat UI (HTML/CSS/JS)

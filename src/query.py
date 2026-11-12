@@ -20,8 +20,18 @@ from embed import search
 # Load .env from project root
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
-MODEL = "claude-sonnet-4-20250514"
+MODEL = "claude-sonnet-5-5"
 MAX_HISTORY = 5  # number of exchange pairs to keep
+
+_client = None
+
+
+def _get_client() -> anthropic.Anthropic:
+    """Reuse one client so credentials are set up once, not on every question."""
+    global _client
+    if _client is None:
+        _client = anthropic.Anthropic()
+    return _client
 
 
 # ---------------------------------------------------------------------------
@@ -106,7 +116,7 @@ def ask(
         history = history[-max_messages:]
 
     # Call Claude
-    client = anthropic.Anthropic()
+    client = _get_client()
     response = client.messages.create(
         model=MODEL,
         max_tokens=1024,
@@ -114,7 +124,8 @@ def ask(
         messages=history,
     )
 
-    answer = response.content[0].text
+    # Newer models can return thinking blocks before the answer; keep only text
+    answer = "".join(b.text for b in response.content if b.type == "text")
 
     # Append assistant response to history
     history.append({"role": "assistant", "content": answer})

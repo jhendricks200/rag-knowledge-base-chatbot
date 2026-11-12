@@ -1,0 +1,35 @@
+{"id": "q01", "question": "How many PTO days per year does someone with 4 years at the company get?", "expected_source": "Employee Handbook.md", "expected_section": "Accrual Rates", "must_include": [["20"]]}
+{"id": "q02", "question": "How many unused PTO days can I carry over into next year?", "expected_source": "Employee Handbook.md", "expected_section": "Carryover Policy", "must_include": [["5"]]}
+{"id": "q03", "question": "How much notice do I need to give for a PTO request of a full week or more?", "expected_source": "Employee Handbook.md", "expected_section": "Requesting PTO", "must_include": [["15"]]}
+{"id": "q04", "question": "How many paid holidays does Meridian observe each year?", "expected_source": "Employee Handbook.md", "expected_section": "Company Holidays", "must_include": [["11"]]}
+{"id": "q05", "question": "How many days a week can I work from home after probation?", "expected_source": "Employee Handbook.md", "expected_section": "Eligibility", "must_include": [["3"]]}
+{"id": "q06", "question": "What are the core hours remote employees must be available?", "expected_source": "Employee Handbook.md", "expected_section": "Core Hours", "must_include": [["10"], ["3"]]}
+{"id": "q07", "question": "How big is the one-time home office stipend?", "expected_source": "Employee Handbook.md", "expected_section": "Home Office Requirements", "must_include": [["$500"]]}
+{"id": "q08", "question": "What is the hotel limit per night for international travel?", "expected_source": "Employee Handbook.md", "expected_section": "Spending Limits", "must_include": [["$350"]]}
+{"id": "q09", "question": "How long do I have to submit an expense report?", "expected_source": "Employee Handbook.md", "expected_section": "Submission Process", "must_include": [["30 days"]]}
+{"id": "q10", "question": "Above what amount do expenses need Finance department approval?", "expected_source": "Employee Handbook.md", "expected_section": "Submission Process", "must_include": [["$1000"]]}
+{"id": "q11", "question": "What is the maximum 401(k) company match?", "expected_source": "Employee Handbook.md", "expected_section": "401(k) Retirement Plan", "must_include": [["5%"]]}
+{"id": "q12", "question": "How much paid parental leave do primary caregivers get?", "expected_source": "Employee Handbook.md", "expected_section": "Parental Leave", "must_include": [["16 weeks"]]}
+{"id": "q13", "question": "What is the minimum password length?", "expected_source": "IT Security Policy.md", "expected_section": "Password Requirements", "must_include": [["14"]]}
+{"id": "q14", "question": "Can I use SMS text messages for multi-factor authentication?", "expected_source": "IT Security Policy.md", "expected_section": "Multi-Factor Authentication (MFA)", "must_include": [["not permitted", "not allowed", "prohibited", "is not", "isn't", "cannot"]]}
+{"id": "q15", "question": "How many failed login attempts lock an account?", "expected_source": "IT Security Policy.md", "expected_section": "Account Lockout", "must_include": [["5"]]}
+{"id": "q16", "question": "After how long of inactivity must a company laptop lock its screen?", "expected_source": "IT Security Policy.md", "expected_section": "Company Devices", "must_include": [["5 minutes"]]}
+{"id": "q17", "question": "Which VPN does the company use?", "expected_source": "IT Security Policy.md", "expected_section": "VPN Usage", "must_include": [["tailscale"]]}
+{"id": "q18", "question": "What number do I call for an urgent security incident?", "expected_source": "IT Security Policy.md", "expected_section": "How to Report", "must_include": [["867-5309"]]}
+{"id": "q19", "question": "How long are security logs kept?", "expected_source": "IT Security Policy.md", "expected_section": "Data Retention", "must_include": [["2 years"]]}
+{"id": "q20", "question": "How quickly is access revoked when an employee leaves?", "expected_source": "IT Security Policy.md", "expected_section": "Access Reviews", "must_include": [["2 hours"]]}
+{"id": "q21", "question": "What laptop do new engineers receive?", "expected_source": "New Hire Onboarding Guide.md", "expected_section": "Equipment", "must_include": [["macbook pro"]]}
+{"id": "q22", "question": "When does the IT welcome email arrive before a new hire's start date?", "expected_source": "New Hire Onboarding Guide.md", "expected_section": "Account Setup", "must_include": [["3 business days"]]}
+{"id": "q23", "question": "Who is the HR Business Partner?", "expected_source": "New Hire Onboarding Guide.md", "expected_section": "Key Contacts", "must_include": [["sarah chen"]]}
+{"id": "q24", "question": "What time is the daily standup?", "expected_source": "New Hire Onboarding Guide.md", "expected_section": "Key Meetings to Attend", "must_include": [["9:30"]]}
+{"id": "q25", "question": "How much does the Professional plan cost per user per month?", "expected_source": "Product FAQ.md", "expected_section": "What plans are available?", "must_include": [["$49"]]}
+{"id": "q26", "question": "How much do you save with annual billing?", "expected_source": "Product FAQ.md", "expected_section": "Is there a discount for annual billing?", "must_include": [["20%"]]}
+{"id": "q27", "question": "How long is the free trial?", "expected_source": "Product FAQ.md", "expected_section": "Is there a free trial?", "must_include": [["14"]]}
+{"id": "q28", "question": "Is MAP HIPAA compliant?", "expected_source": "Product FAQ.md", "expected_section": "Is MAP HIPAA compliant?", "must_include": [["baa", "business associate agreement"], ["enterprise"]]}
+{"id": "q29", "question": "In which regions can MAP store data?", "expected_source": "Product FAQ.md", "expected_section": "Where is data stored?", "must_include": [["us", "virginia", "us-east-1"], ["eu", "ireland", "eu-west-1"], ["singapore", "ap-southeast-1", "apac"]]}
+{"id": "q30", "question": "What is the support response time on the Enterprise plan?", "expected_source": "Product FAQ.md", "expected_section": "How do I contact support?", "must_include": [["4-hour", "4 hour", "4 hours"]]}
+{"id": "q31", "question": "How many visualization types does MAP include?", "expected_source": "Product FAQ.md", "expected_section": "What visualization types are available?", "must_include": [["28"]]}
+{"id": "q32", "question": "Who is the CEO of Meridian Technologies?", "answerable": false}
+{"id": "q33", "question": "What is the office dress code?", "answerable": false}
+{"id": "q34", "question": "What is the company's stock ticker symbol?", "answerable": false}
+{"id": "q35", "question": "Is there free parking at the office?", "answerable": false}

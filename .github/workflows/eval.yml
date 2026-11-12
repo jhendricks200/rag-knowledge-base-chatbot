@@ -1,0 +1,58 @@
+name: Evaluation
+
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write  # lets GitHub prove its identity to the Claude API (no stored API key)
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      # Workload Identity Federation IDs (not secrets) from the Claude Console
+      ANTHROPIC_FEDERATION_RULE_ID: ${{ vars.ANTHROPIC_FEDERATION_RULE_ID || 'fdrl_018Ai1mrMCUY12z8QDb5kNJE' }}
+      ANTHROPIC_ORGANIZATION_ID: ${{ vars.ANTHROPIC_ORGANIZATION_ID || '604eb3a3-dd34-418a-add0-aeb77a0073b8' }}
+      ANTHROPIC_SERVICE_ACCOUNT_ID: ${{ vars.ANTHROPIC_SERVICE_ACCOUNT_ID || 'svac_01BWxRtrN28SJFg985xAWbYd' }}
+      ANTHROPIC_WORKSPACE_ID: ${{ vars.ANTHROPIC_WORKSPACE_ID || 'wrkspc_019GBJ5yaHtzoMX3F9YVnck7' }}
+      ANTHROPIC_IDENTITY_TOKEN_FILE: /tmp/gha-jwt
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies (CPU-only torch)
+        run: |
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install -r requirements.txt
+          pip install --upgrade anthropic
+
+      - name: Fetch GitHub identity token for Claude API
+        # The Claude Console rule only trusts push events (fork PRs can't use it)
+        if: env.ANTHROPIC_FEDERATION_RULE_ID != '' && github.event_name == 'push'
+        run: |
+          curl -sS -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=https://api.anthropic.com" \
+            | jq -r .value > "$ANTHROPIC_IDENTITY_TOKEN_FILE"
+
+      - name: Run evaluation
+        run: |
+          if [ -n "$ANTHROPIC_FEDERATION_RULE_ID" ] && [ -s "$ANTHROPIC_IDENTITY_TOKEN_FILE" ]; then
+            python eval/run_eval.py
+          else
+            echo "Claude API not connected; running retrieval checks only."
+            python eval/run_eval.py --retrieval-only
+          fi
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eval-results
+          path: eval/results/latest.json
